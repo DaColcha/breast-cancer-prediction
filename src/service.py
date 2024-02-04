@@ -1,31 +1,26 @@
 import bentoml
-import numpy as np
 from bentoml.io import PandasDataFrame
 
-from hotel_cancellations_runner import HotelCancellationsModelRunner
+from runner import BreastCancerModelRunner
 
-MODEL_TAG = "hotel-cancellations-model"
+MODEL_TAG = "breast-cancer-predictor"
 
 
-hotel_cancellations_model = bentoml.sklearn.get(MODEL_TAG)
+breast_cancer_model = bentoml.sklearn.get(MODEL_TAG)
 
-# hotel_cancellations_model_runner = bentoml.to_runner()
-hotel_cancellations_model_runner = bentoml.Runner(
+breast_cancer_model_runner = bentoml.Runner(
     #Le enviamos la clase y asignamos el parámetro de inicialización al modelo que se carga
-    HotelCancellationsModelRunner,
-    models=[hotel_cancellations_model],
-    runnable_init_params={"model": hotel_cancellations_model},
+    BreastCancerModelRunner,
+    models=[breast_cancer_model],
+    runnable_init_params={"model": breast_cancer_model},
 )
 
-hotel_cancellations_service = bentoml.Service(
-    "hotel-cancellations-service", 
-    runners=[hotel_cancellations_model_runner]
+breast_cancer_predictor_service = bentoml.Service(
+    "breast_cancer_predictor_service", 
+    runners=[breast_cancer_model_runner]
 )
 
 
-@hotel_cancellations_service.api(input=PandasDataFrame(), output=PandasDataFrame())
+@breast_cancer_predictor_service.api(input=PandasDataFrame(), output=PandasDataFrame())
 def predict(input_df):
-    # Necesitamos convertir `children` a `np.float64` manualmente debido a las peculiaridades de la serialización JSON
-    input_df["children"] = input_df["children"].astype(np.float64)
-
-    return hotel_cancellations_model_runner.will_cancel.run(input_df)
+    return breast_cancer_model_runner.is_cancer.run(input_df)

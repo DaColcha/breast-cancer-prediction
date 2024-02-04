@@ -84,12 +84,12 @@ class BreastCancerFlow(FlowSpec):
         import mlflow
         from joblib import dump
 
-        from feature_pipeline import build_pipeline
+        from model_pipeline import build_model
 
         mlflow.set_tracking_uri(self.tracking_uri)
         with mlflow.start_run(run_id=self.mlflow_run_id):
-            self.training_pipeline = build_pipeline()
-            self.training_pipeline.fit(self.train_x, self.train_y)
+            self.training_pipeline = build_model()
+            self.training_pipeline.fit(self.train_x, self.train_y, model__epochs=100 )
 
             with tempfile.TemporaryDirectory() as temp:
                 dump(self.training_pipeline, f"{temp}/inference_pipeline.joblib")
@@ -137,21 +137,22 @@ class BreastCancerFlow(FlowSpec):
         from mlflow.models.signature import infer_signature
 
         mlflow.set_tracking_uri(self.tracking_uri)
+
         with mlflow.start_run(run_id=self.mlflow_run_id):
             signature = infer_signature(self.train_x, self.train_y)
 
             mlflow.sklearn.log_model(
                 sk_model=self.training_pipeline,
-                artifact_path="hotel-cancellations-model",
+                artifact_path="breast-cancer-predictor",
                 signature=signature,
-                registered_model_name="hotel-cancellations-model",
+                registered_model_name="breast-cancer-predictor",
             )
 
         self.next(self.end)
 
     @step
     def end(self):
-        pass
+        print("<<<< FIN PIPELINE >>>>")
 
 
 if __name__ == "__main__":
