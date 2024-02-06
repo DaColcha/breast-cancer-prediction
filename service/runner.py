@@ -11,8 +11,9 @@ class BreastCancerModelRunner(bentoml.Runnable):
 
     @bentoml.Runnable.method()
     def is_cancer(self, input_data: pd.DataFrame) -> pd.DataFrame:
-        #Redondeamos los valores de salida para tener la probabilidad de que sea cancer
         resultado = input_data[["id"]]
-        predictions = self.classifier.predict(input_data)
-        resultado["is_cancer"] = predictions[:, 1]
+        data_to_predict = input_data.drop(["id"], axis=1)
+        predictions = self.classifier.predict_proba(data_to_predict)
+        is_cancer = predictions[:,1] 
+        resultado["is_cancer"] = is_cancer
         return resultado

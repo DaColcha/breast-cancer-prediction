@@ -1,0 +1,9 @@
+service: "service:breast_cancer_predictor_service"
+labels:
+  owner: "Alejandra Colcha"
+include:
+  - "*.py"
+python:
+  packages:
+   - "scikit-learn"
+   - "pandas"
