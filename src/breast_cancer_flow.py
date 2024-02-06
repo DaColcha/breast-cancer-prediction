@@ -5,16 +5,13 @@ class BreastCancerFlow(FlowSpec):
     source_file = Parameter("source-file", help="Source CSV file")
     tracking_uri = Parameter("tracking-uri", help="MLflow tracking URI", default="http://127.0.0.1:5000")
     train_proportion = Parameter("train-proportion", help="Proportion of the dataset to use for training", default=0.8)
-    test_proportion = Parameter(
-        "test-proportion", help="Proportion of the remaining dataset to use for testing", default=0.2
-    )
 
     @step
     def start(self):
         import mlflow
 
         mlflow.set_tracking_uri(self.tracking_uri)
-        mlflow.set_experiment("/breast-cancer")
+        mlflow.set_experiment("/breast-cancer-predictor")
 
         run = mlflow.start_run()
         self.mlflow_run_id = run.info.run_id
@@ -49,22 +46,19 @@ class BreastCancerFlow(FlowSpec):
 
         mlflow.set_tracking_uri(self.tracking_uri)
         with mlflow.start_run(run_id=self.mlflow_run_id):
-            prediction = self.data['diagnosis'].copy()
-            bc_data = self.data.drop(['diagnosis'], axis=1)
+            target = self.data['diagnosis'].copy()
+            tumor_info = self.data.drop(['diagnosis'], axis=1)
 
-            original_count = len(self.data)
-            training_size = int(original_count * self.train_proportion)
-            test_size = int((1 - self.train_proportion) * self.test_proportion * training_size)
 
-            train_x, rest_x, train_y, rest_y = train_test_split(bc_data, prediction, train_size=training_size)
-            test_x, validate_x, test_y, validate_y = train_test_split(rest_x, rest_y, train_size=test_size)
+            train_x, validate_x, train_y, validate_y = train_test_split(tumor_info, target, 
+                                                                        train_size=self.train_proportion, stratify=target)
+
 
             mlflow.log_params(
                 {
-                    "dataset_size": original_count,
+                    "dataset_size": len(tumor_info),
                     "training_set_size": len(train_x),
                     "validate_set_size": len(validate_x),
-                    "test_set_size": len(test_x),
                 }
             )
 
@@ -72,8 +66,6 @@ class BreastCancerFlow(FlowSpec):
             self.train_y = train_y
             self.validate_x = validate_x
             self.validate_y = validate_y
-            self.test_x = test_x
-            self.test_y = test_y
 
         self.next(self.model_training)
 
@@ -83,13 +75,12 @@ class BreastCancerFlow(FlowSpec):
 
         import mlflow
         from joblib import dump
-
         from model_pipeline import build_model
 
         mlflow.set_tracking_uri(self.tracking_uri)
         with mlflow.start_run(run_id=self.mlflow_run_id):
             self.training_pipeline = build_model()
-            self.training_pipeline.fit(self.train_x, self.train_y, model__epochs=100 )
+            self.training_pipeline.fit(self.train_x, self.train_y)
 
             with tempfile.TemporaryDirectory() as temp:
                 dump(self.training_pipeline, f"{temp}/inference_pipeline.joblib")
@@ -153,7 +144,6 @@ class BreastCancerFlow(FlowSpec):
     @step
     def end(self):
         print("<<<< FIN PIPELINE >>>>")
-
 
 if __name__ == "__main__":
     BreastCancerFlow()
