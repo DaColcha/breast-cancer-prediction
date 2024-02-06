@@ -9,11 +9,9 @@ Hemos utilizado un pipeline completo con `MetaFlow` y registro en `MLflow` donde
 
 En esta parte se ejecutaron 5 pruebas, dado que como se puede visualizar en la imagen, inicialmente existió mucho overfitting hasta que la última de nuestras ejecuciones resultó tener un desempeño más adecuado. 
 
-<img src="https://github.com/DaColcha/breast-cancer-prediction/blob/main/docs/images/chart-mlflow.png" width = 500px>
+<img src="https://github.com/DaColcha/breast-cancer-prediction/blob/116035f56cb179cd7364541aefa3644e2671b56e/docs/images/chart-mlflow.png" width = 500px>
 <br><br>
 De esta manera, el modelo selecionado tiene las siguientes características: 
 
-<img src="https://github.com/DaColcha/breast-cancer-prediction/blob/main/docs/images/final-model-metrics.png" width = 500px>
+<img src="https://github.com/DaColcha/breast-cancer-prediction/blob/116035f56cb179cd7364541aefa3644e2671b56e/docs/images/final-model-metrics.png" width = 500px>
 <br><br>
-
-[Volver al inicio](https://github.com/DaColcha/breast-cancer-prediction/blob/46bcfee97eb212c329361f0c4327c39bf4cc4597/README.md)
